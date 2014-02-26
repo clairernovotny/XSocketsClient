@@ -1,9 +1,0 @@
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient.Test\bin\Debug\XSocketsClient.Test.exe
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient.Test\bin\Debug\XSocketsClient.Test.pdb
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient.Test\bin\Debug\XSocketsClient.dll
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient.Test\bin\Debug\Newtonsoft.Json.dll
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient.Test\bin\Debug\XSocketsClient.pdb
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient.Test\bin\Debug\Newtonsoft.Json.xml
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient.Test\obj\Debug\XSocketsClient.Test.csprojResolveAssemblyReference.cache
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient.Test\obj\Debug\XSocketsClient.Test.exe
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient.Test\obj\Debug\XSocketsClient.Test.pdb

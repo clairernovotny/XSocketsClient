@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Threading;
 using XSocketsClient.Common.Interfaces;
+using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
 
 namespace XSocketsClient.Wrapper
 {
@@ -15,6 +16,7 @@ namespace XSocketsClient.Wrapper
     {
         private readonly CancellationTokenSource _tokenSource;
         private readonly TaskFactory _taskFactory;
+        private readonly X509Certificate2 _certificate2;
 
         public string RemoteIpAddress
         {
@@ -27,28 +29,33 @@ namespace XSocketsClient.Wrapper
 
         public SocketWrapper()
         {
-
-        }
-
-        public SocketWrapper(Socket socket)
-        {
             _tokenSource = new CancellationTokenSource();
             _taskFactory = new TaskFactory(_tokenSource.Token);
-            Socket = socket;
+        }
+
+        public async Task<Stream> ConnectAsync(string host, int port)
+        {
+            Socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            
+            var task = _taskFactory.FromAsync((cb, s) => Socket.BeginConnect(host, port, cb, s), Socket.EndConnect, null).ConfigureAwait(false);
+            
+            await task;
+
             Socket.NoDelay = false;
             if (Socket.Connected)
                 Stream = new NetworkStream(Socket);
+
+            
+
+            if(_certificate2 != null)
+                await AuthenticateAsClient(_certificate2);
+
+            return Stream;
         }
 
-        public SocketWrapper(Socket socket, X509Certificate2 certificate2)
+        public SocketWrapper(X509Certificate certificate) : this()
         {
-            _tokenSource = new CancellationTokenSource();
-            _taskFactory = new TaskFactory(_tokenSource.Token);
-            Socket = socket;            
-            if (Socket.Connected)
-                Stream = new NetworkStream(Socket);
-
-            this.AuthenticateAsClient(certificate2);
+            _certificate2 = new X509Certificate2(certificate.GetEncoded());
         }
 
         public Task AuthenticateAsClient(X509Certificate2 certificate)
@@ -118,19 +125,6 @@ namespace XSocketsClient.Wrapper
 
         }
 
-        public virtual Task<ISocketWrapper> Accept(Action<ISocketWrapper> callback, Action<Exception> error)
-        {
-            Func<IAsyncResult, ISocketWrapper> end = r =>
-            {
-                _tokenSource.Token.ThrowIfCancellationRequested();
-                return new SocketWrapper(Socket.EndAccept(r));
-            };
-            var task = _taskFactory.FromAsync(Socket.BeginAccept, end, null);
-            task.ContinueWith(t => callback(t.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
-                .ContinueWith(t => error(t.Exception), TaskContinuationOptions.OnlyOnFaulted);
-            task.ContinueWith(t => error(t.Exception), TaskContinuationOptions.OnlyOnFaulted);
-            return task;
-        }
 
         public virtual void Dispose()
         {

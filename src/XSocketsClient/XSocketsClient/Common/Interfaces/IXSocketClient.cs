@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using XSocketsClient.Common.Event.Arguments;
 using XSocketsClient.Common.Event.Interface;
 
@@ -26,7 +27,7 @@ namespace XSocketsClient.Common.Interfaces
         
         string Url { get; }
 
-        void Open();
+        Task Open();
         void Close();
         
         void Bind(string name);              

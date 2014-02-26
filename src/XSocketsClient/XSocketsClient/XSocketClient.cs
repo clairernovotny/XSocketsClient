@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading.Tasks;
+using Org.BouncyCastle.X509;
 using XSocketsClient.Common.Event.Arguments;
 using XSocketsClient.Common.Event.Interface;
 using XSocketsClient.Common.Interfaces;
@@ -13,7 +14,7 @@ using XSocketsClient.Helpers;
 using XSocketsClient.Model;
 using XSocketsClient.Protocol;
 using XSocketsClient.Protocol.Handshake.Builder;
-using XSocketsClient.Wrapper;
+
 
 namespace XSocketsClient
 {
@@ -68,7 +69,7 @@ namespace XSocketsClient
         /// </summary>
         public bool IsConnected
         {
-            get { return this.Socket != null && this.Socket.Socket.Connected && this.IsHandshakeDone; }
+            get { return this.Socket != null && this.Socket.Connected && this.IsHandshakeDone; }
         }
 
         /// <summary>
@@ -82,13 +83,11 @@ namespace XSocketsClient
 
         public string Url { get; private set; }
 
-        private EndPoint _remoteEndPoint;
         
         private IXFrameHandler _frameHandler;
         
         private readonly string _origin;
-        private readonly bool _isSecure;
-        private readonly X509Certificate2 _certificate;
+        private readonly X509Certificate _certificate;
 
         public XSocketClient(string url, string origin, bool connect = false, bool isPrimitive = false)
         {
@@ -108,9 +107,8 @@ namespace XSocketsClient
                 Open();
         }
 
-        public XSocketClient(string url, string origin, X509Certificate2 certificate, bool connect = false, bool isPrimitive = false):this(url,origin,connect,isPrimitive)
+        public XSocketClient(string url, string origin, X509Certificate certificate, bool connect = false, bool isPrimitive = false):this(url,origin,connect,isPrimitive)
         {
-            this._isSecure = true;
             this._certificate = certificate;
         }
 
@@ -120,17 +118,15 @@ namespace XSocketsClient
                 this.OnError.Invoke(this, textArgs as TextArgs);
         }
 
-        public void Open()
+        public async Task Open()
         {
             if (this.IsConnected) return;
 
             var connectionstring = GetConnectionstring();
 
             var handshake = new Rfc6455Handshake(connectionstring, this._origin);
-
-            SetRemoteEndpoint();
-
-            ConnectSocket();
+            
+            await ConnectSocket();
 
             DoHandshake(handshake);
         }
@@ -144,32 +140,11 @@ namespace XSocketsClient
                                     this.ClientInfo.StorageGuid;
             return connectionstring;
         }
-
-        private void SetRemoteEndpoint()
+        
+        private async Task ConnectSocket()
         {
             var url = new Uri(this.Url);
-            IPAddress ipAddress;
-            if (!IPAddress.TryParse(url.Host, out ipAddress))
-            {
-                var addr = Dns.GetHostAddresses(url.Host);
-                if (addr.Any(p => p.AddressFamily == AddressFamily.InterNetwork))
-                    _remoteEndPoint = new IPEndPoint(addr.First(p => p.AddressFamily == AddressFamily.InterNetwork), url.Port);
-            }
-            else
-            {
-                _remoteEndPoint = new IPEndPoint(ipAddress, url.Port);
-            }
-        }
-
-        private void ConnectSocket()
-        {
-            var socket = new Socket(_remoteEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            socket.Connect(_remoteEndPoint);
-
-            if (this._isSecure)
-                Socket = new SocketWrapper(socket, this._certificate);
-            else
-                Socket = new SocketWrapper(socket);
+            Socket = await SocketWrapperFactory.ConnectToSocketAsync(url.Host, url.Port, _certificate).ConfigureAwait(false);
         }
 
         private void DoHandshake(Rfc6455Handshake handshake)

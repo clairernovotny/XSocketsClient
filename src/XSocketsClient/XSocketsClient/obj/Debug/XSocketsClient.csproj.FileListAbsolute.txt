@@ -1,6 +1,0 @@
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient\bin\Debug\XSocketsClient.dll
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient\bin\Debug\XSocketsClient.pdb
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient\bin\Debug\Newtonsoft.Json.dll
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient\bin\Debug\Newtonsoft.Json.xml
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient\obj\Debug\XSocketsClient.dll
-C:\Users\Uffe\Desktop\XSocketsClient\XSocketsClient\obj\Debug\XSocketsClient.pdb

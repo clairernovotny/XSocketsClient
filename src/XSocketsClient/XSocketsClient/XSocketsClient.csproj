@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>XSocketsClient</RootNamespace>
     <AssemblyName>XSocketsClient</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,10 +30,16 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="crypto, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Portable.BouncyCastle.1.7.0\lib\portable-net4+sl5+wp8+win8\crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -43,6 +51,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="ClientPool.cs" />
     <Compile Include="Common\Event\Arguments\BinaryArgs.cs" />
     <Compile Include="Common\Event\Arguments\OnClientConnectArgs.cs" />
@@ -54,6 +65,7 @@
     <Compile Include="Common\Event\Interface\IArgs.cs" />
     <Compile Include="Common\Event\Interface\IBinaryArgs.cs" />
     <Compile Include="Common\Event\Interface\ITextArgs.cs" />
+    <Compile Include="SocketWrapperFactory.cs" />
     <Compile Include="XSocketClient.frames.cs" />
     <Compile Include="XSocketClient.pubsub.cs" />
     <Compile Include="Globals\Constants.cs" />
@@ -77,8 +89,6 @@
     <Compile Include="Protocol\Readers\XFrameHandler.cs" />
     <Compile Include="Model\SubscriptionType.cs" />
     <Compile Include="Helpers\Endian.cs" />
-    <Compile Include="Wrapper\SocketWrapper.cs" />
-    <Compile Include="Wrapper\SslStreamWrapper.cs" />
     <Compile Include="XSocketClient.cs" />
     <Compile Include="Helpers\XSocketJsonSerializer.cs" />
   </ItemGroup>
