@@ -101,8 +101,11 @@ namespace XSocketsClient
 
             this.Url = url;
             this._origin = origin;
+            
+#pragma warning disable 4014
             if (connect)
                 Open();
+#pragma warning restore 4014
         }
 
         public XSocketClient(string url, string origin, X509Certificate certificate, bool connect = false, bool isPrimitive = false):this(url,origin,connect,isPrimitive)
@@ -206,7 +209,9 @@ namespace XSocketsClient
         /// </summary>
         protected virtual void FireOnClose()
         {
+#pragma warning disable 4014
             this.Close();
+#pragma warning restore 4014
             if (this.OnClose != null) this.OnClose.Invoke(this, null);
         }
 
