@@ -124,9 +124,9 @@ namespace XSocketsClient
 
             var handshake = new Rfc6455Handshake(connectionstring, this._origin);
             
-            await ConnectSocket();
+            await ConnectSocket().ConfigureAwait(false);
 
-            DoHandshake(handshake);
+            await DoHandshake(handshake).ConfigureAwait(false);
         }
 
         private string GetConnectionstring()
@@ -145,25 +145,32 @@ namespace XSocketsClient
             Socket = await SocketWrapperFactory.ConnectToSocketAsync(url.Host, url.Port, _certificate).ConfigureAwait(false);
         }
 
-        private void DoHandshake(Rfc6455Handshake handshake)
+        private async Task DoHandshake(Rfc6455Handshake handshake)
         {
             var buffer = new byte[1024];
-            Socket.Send(Encoding.UTF8.GetBytes(handshake.ToString()), () => Socket.Receive(buffer, r =>
+            try
             {
-                Receive();
-                IsHandshakeDone = true;
+                await Socket.SendAsync(Encoding.UTF8.GetBytes(handshake.ToString())).ConfigureAwait(false);
+                await Socket.ReceiveAsync(buffer).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                FireOnClose();
+            }
 
-                if (!this.IsPrimitive)
-                {
-                    BindUnboundBindings();
-                }
+            Receive();
 
-                if (this.OnSocketOpen != null)
-                    this.OnSocketOpen.Invoke(this, null);
-            }, err => FireOnClose()),
-                        err => FireOnClose());
+            IsHandshakeDone = true;
+
+            if (!this.IsPrimitive)
+            {
+                await BindUnboundBindings().ConfigureAwait(false);
+            }
+
+            if (this.OnSocketOpen != null)
+                this.OnSocketOpen.Invoke(this, null);
         }
-       
+
         public ITextArgs AsTextArgs(object o, string eventname)
         {
             return new TextArgs { @event = eventname.ToLower(), data = this.Serializer.SerializeToString(o) };
@@ -248,37 +255,44 @@ namespace XSocketsClient
             }
         }
 
-        private void FireBoundMethod(ISubscription binding, ITextArgs args)
+        private async void FireBoundMethod(ISubscription binding, ITextArgs args)
         {
             binding.Callback(args);
             binding.Counter++;
             if (binding.SubscriptionType == SubscriptionType.One)
-                this.UnBind(binding.Event);
+                await this.UnBind(binding.Event);
             else if (binding.SubscriptionType == SubscriptionType.Many && binding.Counter == binding.Limit)
             {
-                this.UnBind(binding.Event);
+                await this.UnBind(binding.Event);
             }
         }
 
         /// <summary>
         ///     Close the current connection
         /// </summary>
-        public void Close()
+        public async Task Close()
         {
-            var frame = GetDataFrame(FrameType.Close, Encoding.UTF8.GetBytes(""));            
+            var frame = GetDataFrame(FrameType.Close, Encoding.UTF8.GetBytes(""));
 
-            Socket.Send(frame.ToBytes(), () => this.Socket.Dispose(), err => { });
+            try
+            {
+                await Socket.SendAsync(frame.ToBytes());
+                Socket.Dispose();
+            }
+            catch (Exception)
+            {
+            }
 
             this.IsHandshakeDone = false;
         }
 
-        public void Ping(byte[] data)
+        public Task Ping(byte[] data)
         {
-            this.SendControlFrame(FrameType.Ping, data);
+            return this.SendControlFrame(FrameType.Ping, data);
         }
-        public void Pong(byte[] data)
+        public Task Pong(byte[] data)
         {
-            this.SendControlFrame(FrameType.Pong, data);
+            return this.SendControlFrame(FrameType.Pong, data);
         }
     }
 }

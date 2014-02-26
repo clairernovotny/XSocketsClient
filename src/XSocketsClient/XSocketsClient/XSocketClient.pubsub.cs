@@ -47,58 +47,65 @@ namespace XSocketsClient
             }
         }
 
-        private void BindUnboundBindings()
+        private Task BindUnboundBindings()
         {
             var unboundBindings = this.GetBindings().Where(p => p.IsBound == false).ToList();
 
-            if (!unboundBindings.Any()) return;
+            if (!unboundBindings.Any()) 
+                return Task.FromResult(true);
+
+            var tasks = new List<Task>();
             foreach (var unboundBinding in unboundBindings)
             {
                 var binding = unboundBinding;
-                new Task(
-                    () =>
-                    Send(this.AsTextArgs(new XSubscriptions {Event = binding.Event.ToLower(), Confirm = binding.Confirm}
-                                         , Constants.Events.PubSub.Subscribe), () =>
-                                             {
-                                                 var b = this.GetBindings().Single(p => p.Event == binding.Event);
-                                                 b.IsBound = true;
-                                             })).RunSynchronously();
+
+                var task = Task.Run(async () =>
+                {
+                    await Send(this.AsTextArgs(new XSubscriptions {Event = binding.Event.ToLower(), Confirm = binding.Confirm}
+                                               , Constants.Events.PubSub.Subscribe)).ConfigureAwait(false);
+
+                    var b = this.GetBindings().Single(p => p.Event == binding.Event);
+                    b.IsBound = true;
+                });
+                tasks.Add(task);
             }
+
+            return Task.WhenAll(tasks);
         }
 
-        public void Bind(string name)
+        public Task Bind(string name)
         {
-            this.Subscribe(name, SubscriptionType.All);          
-        }
-              
-        public void Bind(string name, Action<ITextArgs> callback)
-        {
-            this.Subscribe(name, callback, SubscriptionType.All);         
+            return this.Subscribe(name, SubscriptionType.All);          
         }
 
-        public void Bind(string name, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback)
+        public Task Bind(string name, Action<ITextArgs> callback)
         {
-            this.Subscribe(name, callback, confirmCallback, SubscriptionType.All);
+            return this.Subscribe(name, callback, SubscriptionType.All);         
         }
 
-        public void One(string name, Action<ITextArgs> callback)
+        public Task Bind(string name, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback)
         {
-            this.Subscribe(name, callback, SubscriptionType.One);    
+            return this.Subscribe(name, callback, confirmCallback, SubscriptionType.All);
         }
 
-        public void One(string name, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback)
+        public Task One(string name, Action<ITextArgs> callback)
         {
-            this.Subscribe(name, callback, confirmCallback, SubscriptionType.One);
+            return this.Subscribe(name, callback, SubscriptionType.One);    
         }
 
-        public void Many(string name, uint limit, Action<ITextArgs> callback)
+        public Task One(string name, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback)
         {
-            this.Subscribe(name, callback, SubscriptionType.Many,limit);
+            return this.Subscribe(name, callback, confirmCallback, SubscriptionType.One);
         }
 
-        public void Many(string name, uint limit, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback)
+        public Task Many(string name, uint limit, Action<ITextArgs> callback)
         {
-            this.Subscribe(name,callback,confirmCallback, SubscriptionType.Many, limit);
+            return this.Subscribe(name, callback, SubscriptionType.Many, limit);
+        }
+
+        public Task Many(string name, uint limit, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback)
+        {
+            return this.Subscribe(name, callback, confirmCallback, SubscriptionType.Many, limit);
         }
 
         private void AddConfirmCallback(Action<ITextArgs> confirmCallback, string @event)
@@ -115,7 +122,7 @@ namespace XSocketsClient
         /// Remove the subscription from the list
         /// </summary>
         /// <param name="name"></param>
-        public void UnBind(string name)
+        public async Task UnBind(string name)
         {
             ISubscription subscription = this.GetBindings().FirstOrDefault(b => b.Event.Equals(name.ToLower()));
             if (subscription == null) return;
@@ -123,13 +130,13 @@ namespace XSocketsClient
             if (this.IsConnected)
             {
                 //Unbind on server
-                Send(this.AsTextArgs(new XSubscriptions {Event = name.ToLower()}, Constants.Events.PubSub.Unsubscribe));
+                await Send(this.AsTextArgs(new XSubscriptions {Event = name.ToLower()}, Constants.Events.PubSub.Unsubscribe)).ConfigureAwait(false);
             }
 
             this.RemoveBinding(subscription);
         }
 
-        private void Subscribe(string name, SubscriptionType subscriptionType, uint limit = 0)
+        private async Task Subscribe(string name, SubscriptionType subscriptionType, uint limit = 0)
         {
             ThrowIfPrimitive();
             var subscription = new Subscription(name, subscriptionType, limit);
@@ -137,14 +144,16 @@ namespace XSocketsClient
 
             if (this.IsConnected)
             {
-                Send(this.AsTextArgs(new XSubscriptions
+                await Send(this.AsTextArgs(new XSubscriptions
                 {
                     Event = name.ToLower(),
                     Confirm = true
-                }, Constants.Events.PubSub.Subscribe), () => { subscription.IsBound = true; });
+                }, Constants.Events.PubSub.Subscribe)).ConfigureAwait(false);
+
+                subscription.IsBound = true;
             }
         }
-        private void Subscribe(string name, Action<ITextArgs> callback, SubscriptionType subscriptionType, uint limit = 0)
+        private async Task Subscribe(string name, Action<ITextArgs> callback, SubscriptionType subscriptionType, uint limit = 0)
         {
             ThrowIfPrimitive();
             var subscription = new Subscription(name, callback, subscriptionType, limit);
@@ -152,14 +161,15 @@ namespace XSocketsClient
 
             if (this.IsConnected)
             {                
-                Send(this.AsTextArgs(new XSubscriptions
+                await Send(this.AsTextArgs(new XSubscriptions
                 {
                     Event = name.ToLower(),
                     Confirm = true
-                }, Constants.Events.PubSub.Subscribe), () => { subscription.IsBound = true; });
+                }, Constants.Events.PubSub.Subscribe)).ConfigureAwait(false);
+                subscription.IsBound = true;
             }
         }
-        private void Subscribe(string name, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback, SubscriptionType subscriptionType, uint limit = 0)
+        private async Task Subscribe(string name, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback, SubscriptionType subscriptionType, uint limit = 0)
         {
             ThrowIfPrimitive();
             var subscription = new Subscription(name.ToLower(), callback, subscriptionType, limit, true);
@@ -167,93 +177,85 @@ namespace XSocketsClient
             AddConfirmCallback(confirmCallback, subscription.Event);
             if (this.IsConnected)
             {                
-                Send(this.AsTextArgs(new XSubscriptions { Event = name.ToLower() }, Constants.Events.PubSub.Subscribe), () => subscription.IsBound = true);
+                await Send(this.AsTextArgs(new XSubscriptions { Event = name.ToLower() }, Constants.Events.PubSub.Subscribe)).ConfigureAwait(false);
+                subscription.IsBound = true;
             }
         }        
         //Sending methods
-
-        /// <summary>
-        ///     Send message
-        /// </summary>
-        /// <param name="payload">ITextArgs</param>
-        /// <param name="callback"> </param>
-        public void Send(ITextArgs payload, Action callback)
-        {
-            if (!this.IsConnected)
-                throw new Exception("You cant send messages when not conencted to the server");
-            var frame = GetDataFrame(payload);
-            Socket.Send(frame.ToBytes(), callback.Invoke, err => FireOnClose());
-        }
+        
 
         /// <summary>
         ///     Send a binary message)
         /// </summary>
         /// <param name="payload">IBinaryArgs</param>
-        public void Send(IBinaryArgs payload)
+        public async Task Send(IBinaryArgs payload)
         {
             if (!this.IsConnected)
                 throw new Exception("You cant send messages when not conencted to the server");
+            
             var frame = GetDataFrame(payload);
-            Socket.Send(frame.ToBytes(), () => { }, ex => { });
+            try
+            {
+                await Socket.SendAsync(frame.ToBytes()).ConfigureAwait(false);
+            }
+            catch
+            {
+                FireOnClose();
+            }
         }
 
-        public void Send(string payload)
+        public async Task Send(string payload)
         {
             if (!this.IsConnected)
                 throw new Exception("You cant send messages when not conencted to the server");
-            var frame = GetDataFrame(payload);
-            Socket.Send(frame.ToBytes(), () => { }, err => FireOnClose());
-        }
 
-        public void Send(string payload, Action callback)
+            var frame = GetDataFrame(payload);
+            try
+            {
+                await Socket.SendAsync(frame.ToBytes()).ConfigureAwait(false);
+            }
+            catch
+            {
+                FireOnClose();
+            }
+        }
+     
+
+        public async Task Send(ITextArgs payload)
         {
             if (!this.IsConnected)
                 throw new Exception("You cant send messages when not conencted to the server");
+
             var frame = GetDataFrame(payload);
-            Socket.Send(frame.ToBytes(), callback.Invoke, err => FireOnClose());
+            try
+            {
+
+                await Socket.SendAsync(frame.ToBytes()).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                FireOnClose();
+            }
         }
 
-        public void Send(ITextArgs payload)
+        public Task Send(object obj, string @event)
         {
-            if (!this.IsConnected)
-                throw new Exception("You cant send messages when not conencted to the server");
-            var frame = GetDataFrame(payload);
-            Socket.Send(frame.ToBytes(), () => { }, err => FireOnClose());
+            return this.Send(this.AsTextArgs(obj, @event));
         }
 
-        public void Send(object obj, string @event)
+        public Task Trigger(ITextArgs payload)
         {
-            this.Send(this.AsTextArgs(obj, @event));
+            return this.Send(payload);
         }
 
-        public void Send(object obj, string @event, Action callback)
+        public Task Trigger(object obj, string @event)
         {
-            this.Send(this.AsTextArgs(obj, @event), callback);
+            return this.Send(this.AsTextArgs(obj,@event));
         }
 
-        public void Trigger(ITextArgs payload)
+        public Task Trigger(IBinaryArgs payload)
         {
-            this.Send(payload);
-        }
-
-        public void Trigger(ITextArgs payload, Action callback)
-        {
-            this.Send(payload, callback);
-        }
-
-        public void Trigger(object obj, string @event)
-        {
-            this.Send(this.AsTextArgs(obj,@event));
-        }
-
-        public void Trigger(object obj, string @event, Action callback)
-        {
-            this.Send(this.AsTextArgs(obj,@event), callback);
-        }
-
-        public void Trigger(IBinaryArgs payload)
-        {
-            this.Send(payload);
+            return this.Send(payload);
         }
     }
 }

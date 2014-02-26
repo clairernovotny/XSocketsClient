@@ -11,8 +11,8 @@ namespace XSocketsClient.Common.Interfaces
         Stream Stream { get; }
 
         
-        Task Send(byte[] buffer, Action callback, Action<Exception> error);
-        Task<int> Receive(byte[] buffer, Action<int> callback, Action<Exception> error, int offset = 0);
+        Task SendAsync(byte[] buffer);
+        Task<int> ReceiveAsync(byte[] buffer, int offset = 0);
         
         void Dispose();
         void Close();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using XSocketsClient.Common.Event.Arguments;
 using XSocketsClient.Common.Event.Interface;
 using XSocketsClient.Common.Interfaces;
@@ -17,11 +18,18 @@ namespace XSocketsClient
     /// </summary>
     public partial class XSocketClient
     {
-        private void SendControlFrame(FrameType frameType, byte[] data)
+        private async Task SendControlFrame(FrameType frameType, byte[] data)
         {
             var pongFrame = GetDataFrame(frameType, data);
 
-            Socket.Send(pongFrame.ToBytes(), () => { }, ex => FireOnClose());
+            try
+            {
+                await Socket.SendAsync(pongFrame.ToBytes()).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                FireOnClose();
+            }
         }
 
         //Receive & Frame methods
@@ -132,6 +140,7 @@ namespace XSocketsClient
                             break;
                     }                    
                 });
+
             Read(new byte[1024]);
         }
 
@@ -145,17 +154,22 @@ namespace XSocketsClient
             };
         }
 
-        private void Read(byte[] buffer)
+        private async void Read(byte[] buffer)
         {
-            Socket.Receive(buffer, result =>
+            try
+            {
+                var result = await Socket.ReceiveAsync(buffer).ConfigureAwait(false);
+                if (result <= 0)
                 {
-                    if (result <= 0)
-                    {
-                        return;
-                    }
-                    _frameHandler.Receive(buffer.Take(result));
-                    Read(buffer);
-                }, ex => FireOnClose());
+                    return;
+                }
+                _frameHandler.Receive(buffer.Take(result));
+                Read(buffer);
+            }
+            catch (Exception)
+            {
+                FireOnClose();
+            }
         }
     }
 }

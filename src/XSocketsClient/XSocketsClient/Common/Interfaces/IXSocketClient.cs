@@ -28,29 +28,26 @@ namespace XSocketsClient.Common.Interfaces
         string Url { get; }
 
         Task Open();
-        void Close();
+        Task Close();
         
-        void Bind(string name);              
-        void Bind(string name, Action<ITextArgs> callback);
-        void Bind(string name, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback);
-        void One(string name, Action<ITextArgs> callback);
-        void One(string name, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback);
-        void Many(string name, uint limit, Action<ITextArgs> callback);
-        void Many(string name, uint limit, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback);
+        Task Bind(string name);
+        Task Bind(string name, Action<ITextArgs> callback);
+        Task Bind(string name, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback);
+        Task One(string name, Action<ITextArgs> callback);
+        Task One(string name, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback);
+        Task Many(string name, uint limit, Action<ITextArgs> callback);
+        Task Many(string name, uint limit, Action<ITextArgs> callback, Action<ITextArgs> confirmCallback);
 
-        void UnBind(string name);
+        Task UnBind(string name);
       
-        void Send(string payload);
-        void Send(string payload, Action callback);
-        void Send(ITextArgs payload);
-        void Send(ITextArgs payload, Action callback);
-        void Send(IBinaryArgs payload);
-        void Trigger(ITextArgs payload);
-        void Trigger(ITextArgs payload, Action callback);
-        void Send(object obj, string @event);
-        void Send(object obj, string @event, Action callback);
-        void Trigger(object obj, string @event);
-        void Trigger(object obj, string @event, Action callback);
-        void Trigger(IBinaryArgs payload);
+        Task Send(string payload);
+        Task Send(ITextArgs payload);
+        Task Send(IBinaryArgs payload);
+        Task Trigger(ITextArgs payload);
+        Task Send(object obj, string @event);
+        Task Trigger(object obj, string @event);
+        Task Trigger(IBinaryArgs payload);
+        Task Ping(byte[] data);
+        Task Pong(byte[] data);
     }
 }

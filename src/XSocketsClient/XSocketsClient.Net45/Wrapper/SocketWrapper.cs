@@ -58,7 +58,7 @@ namespace XSocketsClient.Wrapper
             _certificate2 = new X509Certificate2(certificate.GetEncoded());
         }
 
-        public Task AuthenticateAsClient(X509Certificate2 certificate)
+        public async Task AuthenticateAsClient(X509Certificate2 certificate)
         {
             var ssl = new SslStream(Stream, false, (sender, x509Certificate, chain, errors) =>
             {
@@ -75,18 +75,7 @@ namespace XSocketsClient.Wrapper
             var tempStream = new SslStreamWrapper(ssl);
             Stream = tempStream;
 
-            Func<AsyncCallback, object, IAsyncResult> begin =
-                (cb, s) => ssl.BeginAuthenticateAsClient(this.RemoteIpAddress,
-                    new X509Certificate2Collection(certificate),SslProtocols.Tls, false, cb, s);
-
-            var task = Task.Factory.FromAsync(begin, ssl.EndAuthenticateAsClient, null);
-           
-            return task;
-        }
-
-        public virtual void Listen(int backlog)
-        {
-            Socket.Listen(backlog);
+            await ssl.AuthenticateAsClientAsync(RemoteIpAddress, new X509Certificate2Collection(certificate), SslProtocols.Tls, false).ConfigureAwait(false);
         }
 
         public Socket Socket { get; set; }
@@ -104,25 +93,15 @@ namespace XSocketsClient.Wrapper
 
         public Stream Stream { get; private set; }
 
-        public virtual Task<int> Receive(byte[] buffer, Action<int> callback, Action<Exception> error, int offset)
+        public virtual async Task<int> ReceiveAsync(byte[] buffer, int offset = 0)
         {
             if (_tokenSource.IsCancellationRequested || !this.Connected)
-                return null;
+                return -1;
 
+            
+            var read = await Stream.ReadAsync(buffer, offset, buffer.Length - offset).ConfigureAwait(false);
 
-            Func<AsyncCallback, object, IAsyncResult> begin =
-                (cb, s) => Stream.BeginRead(buffer, offset, buffer.Length, cb, s);
-
-
-            Task<int> task = Task.Factory.FromAsync<int>(begin, Stream.EndRead, null);
-            if (callback != null)
-            {
-                task.ContinueWith(t => callback(t.Result), TaskContinuationOptions.NotOnFaulted)
-                    .ContinueWith(t => error(t.Exception), TaskContinuationOptions.OnlyOnFaulted);
-            }
-            task.ContinueWith(t => error(t.Exception), TaskContinuationOptions.OnlyOnFaulted);
-            return task;
-
+            return read;
         }
 
 
@@ -151,37 +130,18 @@ namespace XSocketsClient.Wrapper
             return 0;
         }
 
-        public virtual Task Send(byte[] buffer, Action callback, Action<Exception> error)
+        public virtual async Task SendAsync(byte[] buffer)
         {
+            if (_tokenSource.IsCancellationRequested || !this.Connected)
+                return;
+
             try
             {
-                if (_tokenSource.IsCancellationRequested || !this.Connected)
-                    return null;
-                Func<AsyncCallback, object, IAsyncResult> begin =
-                    (cb, s) =>
-                    {
-                        try
-                        {
-                            return Stream.BeginWrite(buffer, 0, buffer.Length, cb, s);
-                        }
-                        catch (IOException)
-                        {
-                            _tokenSource.Cancel();
-                            return null;
-                        }
-                    };
-
-
-                Task task = Task.Factory.FromAsync(begin, Stream.EndWrite, null);
-                task.ContinueWith(t => callback(), TaskContinuationOptions.NotOnFaulted)
-                    .ContinueWith(t => error(t.Exception), TaskContinuationOptions.OnlyOnFaulted);
-                task.ContinueWith(t => error(t.Exception), TaskContinuationOptions.OnlyOnFaulted);
-                return task;
+                await Stream.WriteAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (IOException)
             {
-                error(ex);
-                return null;
+                _tokenSource.Cancel();
             }
         }
     }
