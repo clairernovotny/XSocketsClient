@@ -6,7 +6,6 @@ namespace XSocketsClient.Model
     /// <summary>
     /// Used for storing subscription for the clients
     /// </summary>
-    [Serializable]
     [DataContract]
     public class XSubscriptions
     {

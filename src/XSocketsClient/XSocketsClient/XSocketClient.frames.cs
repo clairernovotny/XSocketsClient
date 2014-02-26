@@ -114,8 +114,11 @@ namespace XSocketsClient
                     switch (op)
                     {
                         case FrameType.Text:
-                            FireOnMessage(this.Deserialize<TextArgs>(Encoding.UTF8.GetString(payload.ToArray())));
+                        {
+                            var bytes = payload.ToArray();
+                            FireOnMessage(this.Deserialize<TextArgs>(Encoding.UTF8.GetString(bytes, 0, bytes.Length)));
                             break;
+                        }
                         case FrameType.Binary:
                             FireOnBlob(new BinaryArgs(payload));
                             break;

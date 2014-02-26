@@ -4,7 +4,6 @@ using XSocketsClient.Common.Event.Interface;
 
 namespace XSocketsClient.Common.Event.Arguments
 {
-    [Serializable]
     [DataContract]
     public class TextArgs : EventArgs, ITextArgs
     {

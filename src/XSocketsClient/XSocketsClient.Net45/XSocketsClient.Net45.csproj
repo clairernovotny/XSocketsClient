@@ -46,6 +46,7 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ClientPool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Wrapper\SocketWrapper.cs" />
     <Compile Include="Wrapper\SslStreamWrapper.cs" />
