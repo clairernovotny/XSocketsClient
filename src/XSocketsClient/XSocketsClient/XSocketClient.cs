@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Org.BouncyCastle.X509;
+//using Org.BouncyCastle.Pkcs;
+//using Org.BouncyCastle.X509;
 using XSocketsClient.Common.Event.Arguments;
 using XSocketsClient.Common.Event.Interface;
 using XSocketsClient.Common.Interfaces;
@@ -67,7 +68,7 @@ namespace XSocketsClient
         /// </summary>
         public bool IsConnected
         {
-            get { return this.Socket != null && this.Socket.Connected && this.IsHandshakeDone; }
+            get { return this.Socket != null && this.IsHandshakeDone; }
         }
 
         /// <summary>
@@ -85,7 +86,7 @@ namespace XSocketsClient
         private IXFrameHandler _frameHandler;
         
         private readonly string _origin;
-        private readonly X509Certificate _certificate;
+        //private readonly Pkcs12Store _certificate;
 
         public XSocketClient(string url, string origin, bool connect = false, bool isPrimitive = false)
         {
@@ -108,10 +109,10 @@ namespace XSocketsClient
 #pragma warning restore 4014
         }
 
-        public XSocketClient(string url, string origin, X509Certificate certificate, bool connect = false, bool isPrimitive = false):this(url,origin,connect,isPrimitive)
-        {
-            this._certificate = certificate;
-        }
+        //public XSocketClient(string url, string origin, Pkcs12Store certificate, bool connect = false, bool isPrimitive = false):this(url,origin,connect,isPrimitive)
+        //{
+        //    //this._certificate = certificate;
+        //}
 
         private void Error(ITextArgs textArgs)
         {
@@ -145,7 +146,7 @@ namespace XSocketsClient
         private async Task ConnectSocket()
         {
             var url = new Uri(this.Url);
-            Socket = await SocketWrapperFactory.ConnectToSocketAsync(url.Host, url.Port, _certificate).ConfigureAwait(false);
+            Socket = await SocketWrapperFactory.ConnectToSocketAsync(url.Host, url.Port /*, _certificate*/).ConfigureAwait(false);
         }
 
         private async Task DoHandshake(Rfc6455Handshake handshake)

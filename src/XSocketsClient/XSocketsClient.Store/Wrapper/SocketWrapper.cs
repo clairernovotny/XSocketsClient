@@ -1,14 +1,12 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
-using System.Net;
-using System.Net.Security;
-using System.Net.Sockets;
-using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Threading;
-//using Org.BouncyCastle.Pkcs;
+using Windows.Networking;
+using Windows.Networking.Sockets;
 using XSocketsClient.Common.Interfaces;
+
 
 namespace XSocketsClient.Wrapper
 {
@@ -16,14 +14,16 @@ namespace XSocketsClient.Wrapper
     {
         private readonly CancellationTokenSource _tokenSource;
         private readonly TaskFactory _taskFactory;
-   //     private readonly X509Certificate2 _certificate2;
+      //  private readonly X509Certificate _certificate2;
+      //  private TlsProtocolHandler _tlsProtocolHandler;
+
 
         public string RemoteIpAddress
         {
             get
             {
-                var endpoint = Socket.Client.RemoteEndPoint as IPEndPoint;
-                return endpoint != null ? endpoint.Address.ToString() : null;
+                var endpoint = Socket.Information.RemoteAddress;
+                return endpoint != null ? endpoint.CanonicalName : null;
             }
         }
 
@@ -35,15 +35,15 @@ namespace XSocketsClient.Wrapper
 
         public async Task ConnectAsync(string host, int port)
         {
-            Socket = new TcpClient();
-            await Socket.ConnectAsync(host, port).ConfigureAwait(false);
+            Socket = new StreamSocket();
 
-            Socket.NoDelay = false;
-            if (Socket.Connected)
-            {
-                ReadStream = Socket.GetStream();
-                WriteStream = ReadStream;
-            }
+            await Socket.ConnectAsync(new HostName(host), port.ToString(CultureInfo.InvariantCulture), SocketProtectionLevel.PlainSocket).AsTask().ConfigureAwait(false);
+
+        
+            Socket.Control.NoDelay = false;
+
+            ReadStream = Socket.InputStream.AsStreamForRead();
+            WriteStream = Socket.OutputStream.AsStreamForWrite();
 
             //if(_certificate2 != null)
             //    await AuthenticateAsClient(_certificate2);
@@ -52,11 +52,20 @@ namespace XSocketsClient.Wrapper
         //public SocketWrapper(byte[] certificate)
         //    : this()
         //{
-        //    _certificate2 = new X509Certificate2(certificate);
+
+        //    var buf = new DataWriter();
+        //    buf.WriteBytes(certificate);
+            
+        //    var cert = new Certificate(buf.DetachBuffer());
+
+
         //}
 
-        //private async Task AuthenticateAsClient(X509Certificate2 certificate)
+        //private async Task AuthenticateAsClient(X509Certificate certificate)
         //{
+        //    _tlsProtocolHandler = new TlsProtocolHandler(ReadStream, WriteStream);
+        //    _tlsProtocolHandler.Connect(new PskTlsClient())
+
         //    var ssl = new SslStream(ReadStream, false, (sender, x509Certificate, chain, errors) =>
         //    {
         //        if (errors.HasFlag(SslPolicyErrors.RemoteCertificateNameMismatch))
@@ -71,30 +80,33 @@ namespace XSocketsClient.Wrapper
 
         //    var tempStream = new SslStreamWrapper(ssl);
         //    ReadStream = tempStream;
-        //    WriteStream = tempStream;
 
         //    await ssl.AuthenticateAsClientAsync(RemoteIpAddress, new X509Certificate2Collection(certificate), SslProtocols.Tls, false).ConfigureAwait(false);
         //}
 
-        private TcpClient Socket { get; set; }
+        public StreamSocket Socket { get; set; }
 
-        protected virtual bool Connected
-        {
-            get { return Socket.Connected; }
-        }
+  
 
         public Stream ReadStream { get; private set; }
         public Stream WriteStream { get; private set; }
 
         public virtual async Task<int> ReceiveAsync(byte[] buffer, int offset = 0)
         {
-            if (_tokenSource.IsCancellationRequested || !this.Connected)
+            if (_tokenSource.IsCancellationRequested)
                 return -1;
 
-            
-            var read = await ReadStream.ReadAsync(buffer, offset, buffer.Length - offset).ConfigureAwait(false);
+            try
+            {
+                var read = await ReadStream.ReadAsync(buffer, offset, buffer.Length - offset).ConfigureAwait(false);
 
-            return read;
+                return read;
+            }
+            catch (Exception)
+            {
+                return -1;
+            }
+           
         }
 
 
@@ -104,7 +116,7 @@ namespace XSocketsClient.Wrapper
             _tokenSource.Dispose();
             if (ReadStream != null) ReadStream.Dispose();
             if (WriteStream != null) WriteStream.Dispose();
-            if (Socket != null) Socket.Close();
+            if (Socket != null) Socket.Dispose();
         }
 
         public virtual void Close()
@@ -112,26 +124,26 @@ namespace XSocketsClient.Wrapper
             if (ReadStream != null)
             {
                 ReadStream.Flush();
-                ReadStream.Close();
+                ReadStream.Dispose();
             }
             if (WriteStream != null)
             {
                 WriteStream.Flush();
-                WriteStream.Close();
+                WriteStream.Dispose();
             }
 
-            if (Socket != null) 
-                Socket.Close();
+            if (Socket != null) Socket.Dispose();
         }
+
 
         public virtual async Task SendAsync(byte[] buffer)
         {
-            if (_tokenSource.IsCancellationRequested || !this.Connected)
+            if (_tokenSource.IsCancellationRequested)
                 return;
 
             try
             {
-                await WriteStream.WriteAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                await ReadStream.WriteAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
             }
             catch (IOException)
             {

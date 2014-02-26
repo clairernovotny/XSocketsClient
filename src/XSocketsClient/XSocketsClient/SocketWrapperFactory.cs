@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Org.BouncyCastle.X509;
+//using Org.BouncyCastle.Pkcs;
 using XSocketsClient.Common.Interfaces;
 
 namespace XSocketsClient
@@ -24,10 +24,11 @@ namespace XSocketsClient
             return type;
         });
 
-        public static async Task<ISocketWrapper> ConnectToSocketAsync(string host, int port, X509Certificate certificate = null)
+        public static async Task<ISocketWrapper> ConnectToSocketAsync(string host, int port)
         {
 
-            object[] args = certificate == null ? null : new[] {certificate};
+//            object[] args = certificate == null ? null : new[] {certificate};
+            object[] args = null;
 
             var obj = Activator.CreateInstance(_socketWrapperType.Value, args) as ISocketWrapper;
             if (obj == null)

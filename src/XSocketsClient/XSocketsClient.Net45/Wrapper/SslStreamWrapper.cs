@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace XSocketsClient.Wrapper
 {
@@ -107,12 +108,8 @@ namespace XSocketsClient.Wrapper
                 _stream.Write(buffer, offset, count);
         }
 
-
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            if (!CanRead)
-                throw new NotSupportedException("This stream does not support reading");
-
             if (_asyncRead == null)
             {
                 lock (this)
@@ -123,9 +120,19 @@ namespace XSocketsClient.Wrapper
             }
 
             _asyncRead.WaitOne();
-            return _stream.BeginRead(buffer, offset, count, callback, state);
+            try
+            {
+                var result = await _stream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+                return result;
+            }
+            finally
+            {
+                _asyncRead.Set();    
+            }
         }
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+
+
+        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if (_asyncWrite == null)
             {
@@ -136,31 +143,18 @@ namespace XSocketsClient.Wrapper
                 }
             }
             _asyncWrite.WaitOne(); //Only allow one thread through
-            return _stream.BeginWrite(buffer, offset, count, callback, state);
-        }
-
-        public override void EndWrite(IAsyncResult result)
-        {
             try
             {
-                _stream.EndWrite(result);
+                await _stream.WriteAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                _asyncWrite.Set(); //Signal so the next thread can pass through
+                _asyncWrite.Set();    
             }
         }
 
-        public override int EndRead(IAsyncResult result)
-        {
-            try
-            {
-                return _stream.EndRead(result);
-            }
-            finally
-            {
-                _asyncRead.Set(); //Signal so the next thread can pass through
-            }
-        }
+
+
+        
     }
 }

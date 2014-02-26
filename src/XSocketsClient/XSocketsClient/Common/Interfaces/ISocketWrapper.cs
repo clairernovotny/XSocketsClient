@@ -6,10 +6,9 @@ namespace XSocketsClient.Common.Interfaces
 {
     public interface ISocketWrapper
     {
-        bool Connected { get; set; }
         string RemoteIpAddress { get; }
-        Stream Stream { get; }
-
+        Stream ReadStream { get; }
+        Stream WriteStream { get; }
         
         Task SendAsync(byte[] buffer);
         Task<int> ReceiveAsync(byte[] buffer, int offset = 0);
@@ -18,6 +17,6 @@ namespace XSocketsClient.Common.Interfaces
         void Close();
 
  
-        Task<Stream> ConnectAsync(string host, int port);
+        Task ConnectAsync(string host, int port);
     }
 }
