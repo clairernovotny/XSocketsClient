@@ -26,7 +26,7 @@ namespace StockTickerClient
 
             Stocks = new ObservableCollection<Stock>();
 
-            _client = new XSocketClient("ws://localhost.fiddler:15820/Stock", "*");
+            _client = new XSocketClient("ws://localhost:15820/Stock", "*");
             
         }
 
