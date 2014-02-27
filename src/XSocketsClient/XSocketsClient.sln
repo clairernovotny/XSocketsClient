@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSocketsClient.Store", "XSo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSocketsClient.Phone", "XSocketsClient.Phone\XSocketsClient.Phone.csproj", "{6EAA663E-9F11-45D1-9469-F1C7F128F332}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSocketsClient.iOS", "XSocketsClient.iOS\XSocketsClient.iOS.csproj", "{20415C01-C111-4150-AD9C-828047B88D27}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSocketsClient.Android", "XSocketsClient.Android\XSocketsClient.Android.csproj", "{9038978E-EF61-431C-AF61-7F20A3F4C48B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +89,26 @@ Global
 		{6EAA663E-9F11-45D1-9469-F1C7F128F332}.Release|x64.ActiveCfg = Release|Any CPU
 		{6EAA663E-9F11-45D1-9469-F1C7F128F332}.Release|x86.ActiveCfg = Release|x86
 		{6EAA663E-9F11-45D1-9469-F1C7F128F332}.Release|x86.Build.0 = Release|x86
+		{20415C01-C111-4150-AD9C-828047B88D27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20415C01-C111-4150-AD9C-828047B88D27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20415C01-C111-4150-AD9C-828047B88D27}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{20415C01-C111-4150-AD9C-828047B88D27}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{20415C01-C111-4150-AD9C-828047B88D27}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{20415C01-C111-4150-AD9C-828047B88D27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20415C01-C111-4150-AD9C-828047B88D27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20415C01-C111-4150-AD9C-828047B88D27}.Release|ARM.ActiveCfg = Release|Any CPU
+		{20415C01-C111-4150-AD9C-828047B88D27}.Release|x64.ActiveCfg = Release|Any CPU
+		{20415C01-C111-4150-AD9C-828047B88D27}.Release|x86.ActiveCfg = Release|Any CPU
+		{9038978E-EF61-431C-AF61-7F20A3F4C48B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9038978E-EF61-431C-AF61-7F20A3F4C48B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9038978E-EF61-431C-AF61-7F20A3F4C48B}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{9038978E-EF61-431C-AF61-7F20A3F4C48B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9038978E-EF61-431C-AF61-7F20A3F4C48B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9038978E-EF61-431C-AF61-7F20A3F4C48B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9038978E-EF61-431C-AF61-7F20A3F4C48B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9038978E-EF61-431C-AF61-7F20A3F4C48B}.Release|ARM.ActiveCfg = Release|Any CPU
+		{9038978E-EF61-431C-AF61-7F20A3F4C48B}.Release|x64.ActiveCfg = Release|Any CPU
+		{9038978E-EF61-431C-AF61-7F20A3F4C48B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
