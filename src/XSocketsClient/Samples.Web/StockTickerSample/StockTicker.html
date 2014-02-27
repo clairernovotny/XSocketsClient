@@ -30,7 +30,7 @@
             ko.applyBindings(vm);
 
             //Open connection to XSockets
-            conn = new XSockets.WebSocket('ws://127.0.0.1:4502/Stock');
+            conn = new XSockets.WebSocket('ws://localhost:15820/Stock');
 
             //On open, do some bindings
             conn.on(evt.open, function () {
