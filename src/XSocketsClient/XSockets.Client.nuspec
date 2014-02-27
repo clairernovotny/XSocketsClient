@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>XSockets.Client</id>
+    <version>4.0-beta1</version>
+    <title>XSockets.Client</title>
+    <authors>Magnus Thor &amp; Uffe Björklund</authors>
+    <owners>Magnus Thor &amp; Uffe Björklund</owners>
+    <projectUrl>http://xsockets.net/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Provides a socket client for connecting to a XSockets.NET server. This will enable communication from any device talking TCP IP and XSockets.NET.</description>
+    <summary>Provides a socket client for connecting to a XSockets.NET server.</summary>
+    <copyright>Team XSockets</copyright>
+    <tags>XSockets Websockets Realtime PCL</tags>
+    <dependencies>
+      <dependency id="Newtonsoft.Json" version="6.0.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <!-- iOS -->
+    <file src="XSocketsClient.Android\bin\Release\XSocketsClient.Platform.dll" target="lib\MonoAndroid\XSocketsClient.Platform.dll" />
+    <file src="XSocketsClient.Android\bin\Release\XSocketsClient.Platform.pdb" target="lib\MonoAndroid\XSocketsClient.Platform.pdb" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.dll" target="lib\MonoAndroid\XSocketsClient.dll" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.pdb" target="lib\MonoAndroid\XSocketsClient.pdb" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.xml" target="lib\MonoAndroid\XSocketsClient.xml" />
+
+    <!-- Android -->
+    <file src="XSocketsClient.iOS\bin\iPhone\Release\XSocketsClient.Platform.dll" target="lib\MonoTouch\XSocketsClient.Platform.dll" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.dll" target="lib\MonoTouch\XSocketsClient.dll" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.pdb" target="lib\MonoTouch\XSocketsClient.pdb" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.xml" target="lib\MonoTouch\XSocketsClient.xml" />
+
+    <!-- Net 4.5 -->
+    <file src="XSocketsClient.Net45\bin\Release\XSocketsClient.Platform.dll" target="lib\net45\XSocketsClient.Platform.dll" />
+    <file src="XSocketsClient.Net45\bin\Release\XSocketsClient.Platform.pdb" target="lib\net45\XSocketsClient.Platform.pdb" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.dll" target="lib\net45\XSocketsClient.dll" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.pdb" target="lib\net45\XSocketsClient.pdb" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.xml" target="lib\net45\XSocketsClient.xml" />
+
+    <!-- Win 8.1 -->
+    <file src="XSocketsClient.Store\bin\Release\XSocketsClient.Platform.dll" target="lib\win8\XSocketsClient.Platform.dll" />
+    <file src="XSocketsClient.Store\bin\Release\XSocketsClient.Platform.pdb" target="lib\win8\XSocketsClient.Platform.pdb" />
+    <file src="XSocketsClient.Store\bin\Release\XSocketsClient.Platform.pri" target="lib\win8\XSocketsClient.Platform.pri" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.dll" target="lib\win8\XSocketsClient.dll" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.pdb" target="lib\win8\XSocketsClient.pdb" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.xml" target="lib\win8\XSocketsClient.xml" />
+
+    <!-- PCL -->
+    <file src="XSocketsClient\bin\Release\XSocketsClient.dll" target="lib\portable-net45+wp8+win8\XSocketsClient.dll" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.pdb" target="lib\portable-net45+wp8+win8\XSocketsClient.pdb" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.xml" target="lib\portable-net45+wp8+win8\XSocketsClient.xml" />
+
+    <!-- WP8 -->
+    <file src="XSocketsClient.Phone\Bin\Release\XSocketsClient.Platform.dll" target="lib\wp8\XSocketsClient.Platform.dll" />
+    <file src="XSocketsClient.Phone\Bin\Release\XSocketsClient.Platform.pdb" target="lib\wp8\XSocketsClient.Platform.pdb" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.dll" target="lib\wp8\XSocketsClient.dll" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.pdb" target="lib\wp8\XSocketsClient.pdb" />
+    <file src="XSocketsClient\bin\Release\XSocketsClient.xml" target="lib\wp8\XSocketsClient.xml" />
+
+    <!-- Source -->
+    <file src="**\*.cs" target="src" exclude="_ReSharper.*\**\*.*;packages\**\*.*;**\Debug\**\*.*;" />
+  </files>
+</package>
