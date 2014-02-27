@@ -162,7 +162,6 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="App_Start\XSocketsBootstrap.cs" />
     <Compile Include="StockTickerSample\Controllers\StockController.cs" />
     <Compile Include="StockTickerSample\Controllers\StockTickerController.cs" />
     <Compile Include="StockTickerSample\Model\Stock.cs" />
