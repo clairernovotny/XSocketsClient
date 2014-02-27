@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>XSockets.NET Stock Ticker</title>
+    <script src="/Scripts/jquery-2.1.0.js"></script>
+    
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js" rel="stylesheet">
+
+    <script type="text/javascript" src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+    <script src="/Scripts/XSockets.fallback.latest.js"></script>
+    <script src="/Scripts/XSockets.latest.js"></script>
+    <script src="js/knockout-2.2.1.js"></script>
+    <script src="StockTicker.js"></script>
+    <link href="StockTicker.css" rel="stylesheet" />
+
+    <script>
+        //ViewModel
+        var vm = null;
+        //Connection to XSockets
+        var conn = null;
+        //Shortcut to event constants
+        var evt = XSockets.Events;        
+
+        $(function () {
+            //Create viewmodel
+            vm = new StockViewModel();
+
+            //Apply knockout bindings
+            ko.applyBindings(vm);
+
+            //Open connection to XSockets
+            conn = new XSockets.WebSocket('ws://127.0.0.1:4502/Stock');
+
+            //On open, do some bindings
+            conn.on(evt.open, function () {
+                //Listen for all stocks (published at bottom of open event)
+                conn.on('allStocks', function (stockList) {
+                    stockList.forEach(function (stock) {
+                        vm.AddOrUpdate(stock);
+                    });
+                });
+
+                //When a tick arrives, update or add the stock
+                conn.on('tick', function (stock) {
+                    vm.AddOrUpdate(stock);
+                });
+            });
+        });
+
+        //Add or remove the stock from this clients subscriptions
+        var toggleStock = function (stock) {
+            if (stock.Active()) {
+                stock.Active(false);
+                vm.StockSubscriptions.remove(stock.Symbol);
+            }
+            else {
+                stock.Active(true);
+                vm.StockSubscriptions.push(stock.Symbol);
+            }
+            //Tell XSockets about the change
+            //Note that this will update the actual property on the controller without any method decalred being called
+            conn.publish('set_MyStocks', vm.StockSubscriptions());
+        };
+
+    </script>
+
+</head>
+<body>
+    <div class="container-fluid">        
+        <div class="row-fluid">
+            <div class="span12" style="padding-top: 20px;">
+                <div class="well">
+                    <h3>Stock Ticker Sample
+                    </h3>
+                    <p>
+                        A simple sample showing how to get real-time data with XSockets.NET<br/>
+                        Most downloaded realtime framework for .NET 4
+                    </p>                    
+                </div>
+            </div>
+        </div>        
+        <div class="row-fluid">
+            <div class="span12">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Price</th>
+                            <th class="hidden-phone">Open</th>
+                            <th class="hidden-phone">High</th>
+                            <th class="hidden-phone">Low</th>
+                            <th>Change</th>
+                            <th>%</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: Stocks">
+                        <tr>
+                            <td data-bind="text: Symbol"></td>
+                            <td style="width: 80px;" data-bind="text: Price, css: DayTrend"></td>
+                            <td class="hidden-phone" style="width: 80px;" data-bind="text: DayOpen"></td>
+                            <td class="hidden-phone" style="width: 80px;" data-bind="text: DayHigh"></td>
+                            <td class="hidden-phone" style="width: 80px;" data-bind="text: DayLow"></td>
+                            <td style="width: 100px;" data-bind="text: Change, css: Trend"></td>
+                            <td style="width: 100px;" data-bind="text: Percent, css: Trend"></td>
+                            <td>
+                                <button data-bind="css: ToggleState, click: function () { toggleStock($data); }, text: ToggleText"></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>                   
+        </div>
+        <hr/>
+        <div class="pull-right label">&copy; 2013 - Team XSockets.NET</div>
+    </div>
+
+</body>
+</html>
