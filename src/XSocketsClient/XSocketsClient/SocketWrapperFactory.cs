@@ -24,7 +24,7 @@ namespace XSocketsClient
             return type;
         });
 
-        public static async Task<ISocketWrapper> ConnectToSocketAsync(Uri host, Guid storageGuid = default(Guid))
+        public static async Task<ISocketWrapper> ConnectToSocketAsync(Uri host, string origin, string protocol)
         {
 
 //            object[] args = certificate == null ? null : new[] {certificate};
@@ -34,7 +34,7 @@ namespace XSocketsClient
             if (obj == null)
                 throw new Exception("Platform assembly not found. Ensure that XSocketsClient.Platform is present");
 
-            await obj.ConnectAsync(host, storageGuid).ConfigureAwait(false);
+            await obj.ConnectAsync(host, origin, protocol).ConfigureAwait(false);
 
             return obj;
         }

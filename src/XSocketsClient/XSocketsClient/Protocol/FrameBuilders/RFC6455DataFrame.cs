@@ -26,38 +26,39 @@ namespace XSocketsClient.Protocol.FrameBuilders
 
         public byte[] ToBytes()
         {
-            var memoryStream = new MemoryStream();
-                      
-            const bool rsv1 = false;
-            const bool rsv2 = false;
-            const bool rsv3 = false;
-
-            var bt = (IsFinal ? 1 : 0) * 0x80;
-            bt += (rsv1 ? 0x40 : 0x0);
-            bt += (rsv2 ? 0x20 : 0x0);
-            bt += (rsv3 ? 0x10 : 0x0);
-            bt += (byte)FrameType;
-
-            memoryStream.WriteByte((byte)bt);
-          
-            byte[] payloadLengthBytes = GetLengthBytes();
-
-            memoryStream.Write(payloadLengthBytes, 0, payloadLengthBytes.Length);
-
-            byte[] payload = Payload;
-
-            if (IsMasked)
+            using (var memoryStream = new MemoryStream())
             {
-                byte[] keyBytes = BitConverter.GetBytes(MaskKey);
-                if (BitConverter.IsLittleEndian)
-                    Array.Reverse(keyBytes);
-                memoryStream.Write(keyBytes, 0, keyBytes.Length);
-                payload = TransformBytes(Payload, MaskKey);
+                const bool rsv1 = false;
+                const bool rsv2 = false;
+                const bool rsv3 = false;
+
+                var bt = (IsFinal ? 1 : 0)*0x80;
+                bt += (rsv1 ? 0x40 : 0x0);
+                bt += (rsv2 ? 0x20 : 0x0);
+                bt += (rsv3 ? 0x10 : 0x0);
+                bt += (byte)FrameType;
+
+                memoryStream.WriteByte((byte)bt);
+
+                byte[] payloadLengthBytes = GetLengthBytes();
+
+                memoryStream.Write(payloadLengthBytes, 0, payloadLengthBytes.Length);
+
+                byte[] payload = Payload;
+
+                if (IsMasked)
+                {
+                    byte[] keyBytes = BitConverter.GetBytes(MaskKey);
+                    if (BitConverter.IsLittleEndian)
+                        Array.Reverse(keyBytes);
+                    memoryStream.Write(keyBytes, 0, keyBytes.Length);
+                    payload = TransformBytes(Payload, MaskKey);
+                }
+
+                memoryStream.Write(payload, 0, Payload.Length);
+
+                return memoryStream.ToArray();
             }
-
-            memoryStream.Write(payload, 0, Payload.Length);
-
-            return memoryStream.ToArray();       
         }
 
    
@@ -92,7 +93,7 @@ namespace XSocketsClient.Protocol.FrameBuilders
             return payloadLengthBytes.ToArray();
         }
 
-        public static byte[] TransformBytes(byte[] bytes, int mask)
+        private static byte[] TransformBytes(byte[] bytes, int mask)
         {
             var output = new byte[bytes.Length];
             byte[] maskBytes = BitConverter.GetBytes(mask);

@@ -33,7 +33,7 @@ namespace XSocketsClient.Wrapper
             _taskFactory = new TaskFactory(_tokenSource.Token);
         }
 
-        public async Task ConnectAsync(Uri host, Guid storageGuid = default(Guid))
+        public async Task ConnectAsync(Uri host, string origin, string protocol)
         {
             Socket = new StreamSocket();
 

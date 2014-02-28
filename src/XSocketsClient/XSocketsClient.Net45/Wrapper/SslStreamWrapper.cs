@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 
 namespace XSocketsClient.Wrapper
 {
@@ -11,8 +12,8 @@ namespace XSocketsClient.Wrapper
         readonly object _locker = new Object();
         readonly Stream _stream;
 
-        AutoResetEvent _asyncRead;
-        AutoResetEvent _asyncWrite;
+        AsyncAutoResetEvent _asyncRead;
+        AsyncAutoResetEvent _asyncWrite;
 
 
         public SslStreamWrapper(Stream stream)
@@ -115,11 +116,11 @@ namespace XSocketsClient.Wrapper
                 lock (this)
                 {
                     if (_asyncRead == null)
-                        _asyncRead = new AutoResetEvent(true);
+                        _asyncRead = new AsyncAutoResetEvent(true);
                 }
             }
 
-            _asyncRead.WaitOne();
+            await _asyncRead.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var result = await _stream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
@@ -139,10 +140,10 @@ namespace XSocketsClient.Wrapper
                 lock (this)
                 {
                     if (_asyncWrite == null)
-                        _asyncWrite = new AutoResetEvent(true);
+                        _asyncWrite = new AsyncAutoResetEvent(true);
                 }
             }
-            _asyncWrite.WaitOne(); //Only allow one thread through
+            await _asyncWrite.WaitAsync(cancellationToken).ConfigureAwait(false); //Only allow one thread through
             try
             {
                 await _stream.WriteAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);

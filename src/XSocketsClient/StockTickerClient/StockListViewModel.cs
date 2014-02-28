@@ -25,7 +25,8 @@ namespace StockTickerClient
 
             Stocks = new ObservableCollection<Stock>();
 
-            _client = new XSocketClient("ws://localhost:15820/Stock", "*");
+            //_client = new XSocketClient("ws://localhost:15820/Stock", "*");
+            _client = new XSocketClient("wss://localhost:44305/Stock", "*");
             
         }
 
@@ -38,7 +39,7 @@ namespace StockTickerClient
             Debug.WriteLine("Listening for ticks");
         }
 
-        private async void OnAllStocks(ITextArgs args)
+        private void OnAllStocks(ITextArgs args)
         {
             Debug.WriteLine("OnAllStocks");
             var stocks = JsonConvert.DeserializeObject<IList<Stock>>(args.data);

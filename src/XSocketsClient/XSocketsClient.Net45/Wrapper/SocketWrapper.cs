@@ -27,22 +27,58 @@ namespace XSocketsClient.Wrapper
             }
         }
 
+        private NetworkStream ns;
+
         public SocketWrapper()
         {
             _tokenSource = new CancellationTokenSource();
             _taskFactory = new TaskFactory(_tokenSource.Token);
         }
 
-        public async Task ConnectAsync(Uri host, Guid storageGuid = default(Guid))
+        public async Task ConnectAsync(Uri host, string origin, string protocol)
         {
             Socket = new TcpClient();
+
+            var secure = "wss".Equals(host.Scheme, StringComparison.OrdinalIgnoreCase);
+            
+            
             await Socket.ConnectAsync(host.Host, host.Port).ConfigureAwait(false);
 
-            Socket.NoDelay = false;
+            Socket.NoDelay = true;
             if (Socket.Connected)
             {
-                ReadStream = Socket.GetStream();
-                WriteStream = ReadStream;
+
+                var stream = Socket.GetStream();
+                ns = stream;
+
+                if (secure)
+                {
+                    var ssl = new SslStream(stream, false, (sender, x509Certificate, chain, errors) =>
+                    {
+                        
+                        //if (errors.HasFlag(SslPolicyErrors.RemoteCertificateNameMismatch))
+                        //{
+                        //    return true;
+                        //}
+
+                        //if (errors == SslPolicyErrors.None)
+                        //return true;
+                        //    return true;
+                        return errors == SslPolicyErrors.None;
+                    }, null);
+                    await ssl.AuthenticateAsClientAsync(host.Host).ConfigureAwait(false);
+
+                    var tempStream = new SslStreamWrapper(ssl);
+                    ReadStream = tempStream;
+                    WriteStream = tempStream;
+
+                }
+                else
+                {
+                    ReadStream = stream;
+                    WriteStream = stream;
+                }
+                
             }
 
             //if(_certificate2 != null)
@@ -91,10 +127,10 @@ namespace XSocketsClient.Wrapper
             if (_tokenSource.IsCancellationRequested || !this.Connected)
                 return -1;
 
-            
-            var read = await ReadStream.ReadAsync(buffer, offset, buffer.Length - offset).ConfigureAwait(false);
+            var bytesRead = await ReadStream.ReadAsync(buffer, offset, buffer.Length - offset).ConfigureAwait(false);
+            //var bytesRead = ReadStream.Read(buffer, offset, buffer.Length);
 
-            return read;
+            return bytesRead;
         }
 
 
@@ -132,6 +168,7 @@ namespace XSocketsClient.Wrapper
             try
             {
                 await WriteStream.WriteAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                await WriteStream.FlushAsync();
             }
             catch (IOException)
             {

@@ -7,8 +7,6 @@ namespace XSocketsClient.Helpers
 {    
     public static partial class XSocketHelper
     {
-        #region "Transformation Methods - XSocketEvents & JSON"
-
         /// <summary>
         /// If possible use the extension-method ToTextArgs for the controller instead
         /// </summary>
@@ -76,6 +74,5 @@ namespace XSocketsClient.Helpers
         {
             return client.Serializer.DeserializeFromString(json, targetType);
         }
-        #endregion
     }
 }

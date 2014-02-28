@@ -4,10 +4,10 @@
     <title>XSockets.NET Stock Ticker</title>
     <script src="/Scripts/jquery-2.1.0.js"></script>
     
-    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
-    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js" rel="stylesheet">
 
-    <script type="text/javascript" src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
     <script src="/Scripts/XSockets.fallback.latest.js"></script>
     <script src="/Scripts/XSockets.latest.js"></script>
     <script src="js/knockout-2.2.1.js"></script>
@@ -30,7 +30,7 @@
             ko.applyBindings(vm);
 
             //Open connection to XSockets
-            conn = new XSockets.WebSocket('ws://localhost:15820/Stock');
+            conn = new XSockets.WebSocket('wss://localhost:44305/Stock');
 
             //On open, do some bindings
             conn.on(evt.open, function () {

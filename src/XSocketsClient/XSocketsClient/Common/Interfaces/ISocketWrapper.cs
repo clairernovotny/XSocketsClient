@@ -17,6 +17,6 @@ namespace XSocketsClient.Common.Interfaces
         void Close();
 
 
-        Task ConnectAsync(Uri host, Guid storageGuid = default(Guid));
+        Task ConnectAsync(Uri host, string origin, string protocol);
     }
 }

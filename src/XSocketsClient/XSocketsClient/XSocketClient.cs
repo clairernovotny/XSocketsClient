@@ -145,19 +145,28 @@ namespace XSocketsClient
         
         private async Task ConnectSocket()
         {
-            var url = new Uri(this.Url);
-            Socket = await SocketWrapperFactory.ConnectToSocketAsync(url, ClientInfo.StorageGuid /*, _certificate*/).ConfigureAwait(false);
+            var url = new Uri(GetConnectionstring());
+            Socket = await SocketWrapperFactory.ConnectToSocketAsync(url, _origin, "XSocketsNET"/*, _certificate*/).ConfigureAwait(false);
         }
 
         private async Task DoHandshake(Rfc6455Handshake handshake)
         {
-            var buffer = new byte[1024];
+            var buffer = new byte[2048];
             try
             {
                 await Socket.SendAsync(Encoding.UTF8.GetBytes(handshake.ToString())).ConfigureAwait(false);
-                var count = await Socket.ReceiveAsync(buffer).ConfigureAwait(false);
 
-                var str = Encoding.UTF8.GetString(buffer, 0, count);
+                var gotHandshakeResponse = false;
+                do
+                {
+                    var count = await Socket.ReceiveAsync(buffer).ConfigureAwait(false);
+
+                    var str = Encoding.UTF8.GetString(buffer, 0, count);
+
+                    if (str.EndsWith("\r\n\r\n"))
+                        gotHandshakeResponse = true;
+                    
+                } while (!gotHandshakeResponse);
             }
             catch (Exception)
             {
