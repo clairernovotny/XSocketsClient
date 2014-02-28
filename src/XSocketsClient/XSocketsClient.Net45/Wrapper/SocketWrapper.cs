@@ -33,10 +33,10 @@ namespace XSocketsClient.Wrapper
             _taskFactory = new TaskFactory(_tokenSource.Token);
         }
 
-        public async Task ConnectAsync(string host, int port)
+        public async Task ConnectAsync(Uri host, Guid storageGuid = default(Guid))
         {
             Socket = new TcpClient();
-            await Socket.ConnectAsync(host, port).ConfigureAwait(false);
+            await Socket.ConnectAsync(host.Host, host.Port).ConfigureAwait(false);
 
             Socket.NoDelay = false;
             if (Socket.Connected)

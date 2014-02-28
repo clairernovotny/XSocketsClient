@@ -11,7 +11,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Button Content="Start" Click="Start_Click" />
-        <DataGrid Grid.Row="1"
+        <DataGrid Grid.Row="1" x:Name="stockGrid"
             ItemsSource="{Binding Stocks}" />
     </Grid>
 </Window>

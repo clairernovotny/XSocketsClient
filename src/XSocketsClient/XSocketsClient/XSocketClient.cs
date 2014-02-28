@@ -146,7 +146,7 @@ namespace XSocketsClient
         private async Task ConnectSocket()
         {
             var url = new Uri(this.Url);
-            Socket = await SocketWrapperFactory.ConnectToSocketAsync(url.Host, url.Port /*, _certificate*/).ConfigureAwait(false);
+            Socket = await SocketWrapperFactory.ConnectToSocketAsync(url, ClientInfo.StorageGuid /*, _certificate*/).ConfigureAwait(false);
         }
 
         private async Task DoHandshake(Rfc6455Handshake handshake)
@@ -155,7 +155,9 @@ namespace XSocketsClient
             try
             {
                 await Socket.SendAsync(Encoding.UTF8.GetBytes(handshake.ToString())).ConfigureAwait(false);
-                await Socket.ReceiveAsync(buffer).ConfigureAwait(false);
+                var count = await Socket.ReceiveAsync(buffer).ConfigureAwait(false);
+
+                var str = Encoding.UTF8.GetString(buffer, 0, count);
             }
             catch (Exception)
             {

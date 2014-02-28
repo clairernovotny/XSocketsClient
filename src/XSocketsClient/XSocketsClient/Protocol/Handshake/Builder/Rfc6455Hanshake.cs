@@ -12,8 +12,8 @@ namespace XSocketsClient.Protocol.Handshake.Builder
             "Connection: Upgrade\r\n" +
             "Sec-WebSocket-Protocol: XSocketsNET\r\n" +
             "Sec-WebSocket-Key: {3}\r\n" +
-            "Sec-WebSocket-Version: 13\r\n" +
-            "{4}";
+            "Sec-WebSocket-Version: 13\r\n\r\n";// +
+            //"{4}";
 
         private readonly string _host = String.Empty;
         private readonly string _origin = String.Empty;
@@ -44,7 +44,7 @@ namespace XSocketsClient.Protocol.Handshake.Builder
        
         public override string ToString()
         {
-            return string.Format(Handshake, _path, _origin, _host, Key, "\r\n" + @"^n:ds[4U");
+            return string.Format(Handshake, _path, _origin, _host, Key /*, "\r\n" + @"^n:ds[4U" */);
         }
     }
 }

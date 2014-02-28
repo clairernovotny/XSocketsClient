@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,11 +34,11 @@ namespace StockTickerClient
             await _client.Open();
             Debug.WriteLine("Connection Open");
             await _client.Bind("allStocks", OnAllStocks);
-            await _client.Bind("tick", OnTick);
+            await _client.Bind("tick", OnTick); 
             Debug.WriteLine("Listening for ticks");
         }
 
-        private void OnAllStocks(ITextArgs args)
+        private async void OnAllStocks(ITextArgs args)
         {
             Debug.WriteLine("OnAllStocks");
             var stocks = JsonConvert.DeserializeObject<IList<Stock>>(args.data);
@@ -66,7 +65,16 @@ namespace StockTickerClient
             var i = Stocks.IndexOf(stock);
             if (i >= 0)
             {
-                Stocks[i] = stock;
+                var s = Stocks[i];
+
+                s.Change = stock.Change;
+                s.DayClose = stock.DayClose;
+                s.DayHigh = stock.DayHigh;
+                s.DayLow = stock.DayLow;
+                s.DayOpen = stock.DayOpen;
+                s.LastChange = stock.LastChange;
+                s.PercentChange = stock.PercentChange;
+                s.Price = stock.Price;
             }
             else
             {
